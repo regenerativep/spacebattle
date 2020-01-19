@@ -1,11 +1,92 @@
 var express = require("express");
+var WebSocket = require("ws");
+
+
+class GameClient
+{
+    constructor(socket)
+    {
+        this.socket = socket;
+        this.socket.on("message", (...params) => { this.receive(...params); })
+        this.x = 0;
+        this.y = 0;
+        this.angle = 0;
+        this.vx = 0;
+        this.vy = 0;
+        this.vangle = 0;
+        this.turnValue = 0;
+        this.forwardValue = false;
+        this.rocketAccel = 0.1;
+        this.angleAccel = 0.1;
+    }
+    update()
+    {
+        if(this.forwardValue)
+        {
+            this.vx += Math.cos(this.angle) * this.rocketAccel;
+            this.vy += Math.sin(this.angle) * this.rocketAccel;
+        }
+        this.vangle += this.turnValue * this.angleAccel;
+
+        this.x += this.vx;
+        this.y += this.vy;
+        this.angle += this.vangle;
+
+        //warp effect
+        while(this.x < 0) this.x += width;
+        while(this.x >= width) this.x -= width;
+        while(this.y < 0) this.y += height;
+        while(this.y >= height) this.y -= height;
+
+        //send information
+        this.socket.send(JSON.stringify({
+            type: "entityUpdate",
+            x: this.x,
+            y: this.y,
+            vx: this.vx,
+            vy: this.vy
+        }));
+    }
+    receive(data)
+    {
+        switch(data.type)
+        {
+            case "setTurn":
+                this.turnValue = data.value;
+                break;
+            case "setRocket":
+                this.forwardValue = data.value;
+                break;
+            case "shoot":
+                this.shoot();
+                break;
+        }
+    }
+}
 
 var webserver = null;
+var gameserver = null;
+var clientList = null;
+var width = 640, height = 480;
+var startingPositions = [
+    { x: width / 2, y: 32 },
+    { x: width / 2, y: height - 32}
+];
 function main()
 {
     webserver = express();
     webserver.use(express.static("public"));
-    let port = 8080;
-    webserver.listen(port, () => { console.log("webserver listening on http://127.0.0.1:" + port); });
+    let webserverPort = 8080;
+    webserver.listen(webserverPort, () => { console.log("webserver listening on http://127.0.0.1:" + webserverPort); });
+
+    let wsPort = 5524;
+    gameserver = new WebSocket.Server({ port: wsPort }, () => {
+        console.log("websocket server running on port " + wsPort);
+        clientList = [];
+    });
+    gameserver.on("connection", (socket, req) => {
+        let client = new GameClient(socket);
+        clientList.push(client);
+    });
 }
 main();
