@@ -18,8 +18,8 @@ class SpaceShip
         this.vangle = 0;
         this.turnValue = 0;
         this.forwardValue = false;
-        this.rocketAccel = 0.1;
-        this.angleAccel = 0.1;
+        this.rocketAccel = 0.01;
+        this.angleAccel = 0.01;
     }
     draw()
     {
@@ -114,13 +114,20 @@ function setup()
 {
     createCanvas(640,480);
     background(0);
-    connect(/**address goes here or smth */);
+    connect("ws://127.0.0.1:5524");
 }
 
 function draw()
 {
-    myShip.draw();
-    enemyShip.draw();
+    background(0);
+    if(myShip != null)
+    {
+        myShip.draw();
+    }
+    if(enemyShip != null)
+    {
+        enemyShip.draw();
+    }
     for(let i = 0; i < projectiles.length; i++)
         {
             let p = projectiles[i];
@@ -192,7 +199,7 @@ function keyReleased()
     }
     if(key=='d')
     {
-        dPress = fasle;
+        dPress = false;
         if(!aPress)
         {
             ws.send(JSON.stringify({

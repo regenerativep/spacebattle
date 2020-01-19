@@ -8,8 +8,6 @@ class GameClient
     {
         this.id = highestId++;
         this.socket = socket;
-        var _this = this;
-        this.socket.on("message", (...params) => { _this.receive(...params); })
         this.x = startingPositions[0].x;
         this.y = startingPositions[0].y;
         startingPositions.splice(0, 1);
@@ -20,7 +18,8 @@ class GameClient
         this.turnValue = 0;
         this.forwardValue = false;
         this.rocketAccel = 0.1;
-        this.angleAccel = 0.1;
+        this.angleAccel = 0.001;
+        this.angleFriction = 0.0001;
         this.radius = 16;
     }
     update()
@@ -31,7 +30,9 @@ class GameClient
             this.vy += Math.sin(this.angle) * this.rocketAccel;
         }
         this.vangle += this.turnValue * this.angleAccel;
-
+        if(this.vangle > this.angleFriction) this.vangle -= this.angleFriction;
+        else if(this.vangle < -this.angleFriction) this.vangle += this.angleFriction;
+        else this.vangle = 0;
         this.x += this.vx;
         this.y += this.vy;
         this.angle += this.vangle;
@@ -41,7 +42,6 @@ class GameClient
         while(this.x >= width) this.x -= width;
         while(this.y < 0) this.y += height;
         while(this.y >= height) this.y -= height;
-
         //send information
         broadcast(JSON.stringify({
             type: "shipUpdate",
@@ -54,21 +54,7 @@ class GameClient
             vangle: this.vangle
         }));
     }
-    receive(data)
-    {
-        switch(data.type)
-        {
-            case "setTurn":
-                this.turnValue = data.value;
-                break;
-            case "setRocket":
-                this.forwardValue = data.value;
-                break;
-            case "shoot":
-                this.shoot();
-                break;
-        }
-    }
+    
     shoot()
     {
         let proj = new Projectile(this.x, this.y, this.vx + Math.cos(this.angle) * projectileSpeed, this.vy + Math.sin(this.angle) * projectileSpeed, this);
@@ -80,6 +66,23 @@ function broadcast(data)
     for(let i = 0; i < clientList.length; i++)
     {
         clientList[i].socket.send(data);
+    }
+}
+function receive(who, data)
+{
+    let dataObj = JSON.parse(data);
+    console.log(dataObj);
+    switch(dataObj.type)
+    {
+        case "setTurn":
+            who.turnValue = dataObj.value;
+            break;
+        case "setForward":
+            who.forwardValue = dataObj.value;
+            break;
+        case "shoot":
+            who.shoot();
+            break;
     }
 }
 class Projectile
@@ -171,6 +174,8 @@ function main()
     });
     gameserver.on("connection", (socket, req) => {
         let client = new GameClient(socket);
+        console.log("client connected " + client.id);
+        socket.on("message", (data) => { receive(client, data); } );
         clientList.push(client);
         socket.send(JSON.stringify({
             type: "setId",
