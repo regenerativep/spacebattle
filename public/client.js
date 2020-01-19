@@ -25,7 +25,7 @@ class SpaceShip
     {
         push();
         translate(this.x,this.y);
-        rotate(this.angle + Math.PI / 2);
+        rotate(this.angle - Math.PI / 2);
         fill(255);
         triangle(0,16,11,-10,-11,-10);
         pop();
