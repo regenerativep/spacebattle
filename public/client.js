@@ -65,12 +65,17 @@ function setup()
     connect(/**address goes here or smth */);
 }
 
+function draw()
+{
+
+}
+
 var wPress = false;
 var aPress = false;
 var dPress = false;
 var spacePress = false;
 
-keyPressed()
+function keyPressed()
 {
     if(key=='w')
     {
@@ -105,7 +110,7 @@ keyPressed()
     }
 }
 
-keyReleased()
+function keyReleased()
 {
     if(key=='w')
     {
