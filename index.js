@@ -48,8 +48,10 @@ class GameClient
             id: this.id,
             x: this.x,
             y: this.y,
+            angle: this.angle,
             vx: this.vx,
-            vy: this.vy
+            vy: this.vy,
+            vangle: this.vangle
         }));
     }
     receive(data)
@@ -66,6 +68,11 @@ class GameClient
                 this.shoot();
                 break;
         }
+    }
+    shoot()
+    {
+        let proj = new Projectile(this.x, this.y, this.vx + Math.cos(this.angle) * projectileSpeed, this.vy + Math.sin(this.angle) * projectileSpeed, this);
+        projectileList.push(proj);
     }
 }
 function broadcast(data)
@@ -149,6 +156,7 @@ var startingPositions = [
     { x: width / 2, y: height - 32}
 ];
 var projectileList = [];
+var projectileSpeed = 4;
 function main()
 {
     webserver = express();
