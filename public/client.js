@@ -117,6 +117,8 @@ function setup()
     createCanvas(640,480);
     background(0);
     connect("ws://127.0.0.1:5524");
+    noLoop();
+    setInterval(() => { draw(); }, 1000 / 60);
 }
 
 function draw()
@@ -158,7 +160,7 @@ function keyPressed()
         aPress = true;
         ws.send(JSON.stringify({
             type: "setTurn",
-            value: 1
+            value: -1
         }))
     }
     if(key=='d')
@@ -166,7 +168,7 @@ function keyPressed()
         dPress = true;
         ws.send(JSON.stringify({
             type: "setTurn",
-            value: -1
+            value: 1
         }))
     }
     if(key==' ')
