@@ -23,7 +23,10 @@ class SpaceShip
     }
     draw()
     {
-        ellipse(this.x,this.y,10,10);
+        translate(this.x,this.y);
+        rotate(this.angle);
+        fill(255);
+        triangle(0,16,11,-10,-11,-10);
     }
 }
 
@@ -48,6 +51,8 @@ var receivedActions = {
             myShip.y = data.y;
             myShip.vx = data.vx;
             myShip.vy = data.vy;
+            myShip.angle = data.angle;
+            myShip.vangle = data.vangle;
         }
         else
         {
@@ -59,6 +64,8 @@ var receivedActions = {
             enemyShip.y = data.y;
             enemyShip.vx = data.vx;
             enemyShip.vy = data.vy;
+            enemyShip.angle = data.angle;
+            enemyShip.vangle = data.vangle;
         }
         
     },
@@ -89,9 +96,6 @@ function connect(target)
     ws = new WebSocket(target);
     ws.onopen = function() {
         console.log("connected to " + target);
-        ws.send(JSON.stringify({
-            type: "join"
-        }));
         connected = true;
     };
     ws.onclose = function() {
@@ -115,7 +119,14 @@ function setup()
 
 function draw()
 {
-    
+    myShip.draw();
+    enemyShip.draw();
+    for(let i = 0; i < projectiles.length; i++)
+        {
+            let p = projectiles[i];
+            fill(255);
+            ellipse(p.x,p.y,2,2);
+        }
 }
 
 var wPress = false;
