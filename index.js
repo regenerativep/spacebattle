@@ -9,8 +9,9 @@ class GameClient
         this.id = highestId++;
         this.socket = socket;
         this.socket.on("message", (...params) => { this.receive(...params); })
-        this.x = 0;
-        this.y = 0;
+        this.x = startingPositions[0].x;
+        this.y = startingPositions[0].y;
+        startingPositions.splice(0, 1);
         this.angle = 0;
         this.vx = 0;
         this.vy = 0;
