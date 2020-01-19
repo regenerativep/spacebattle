@@ -85,7 +85,7 @@ var receivedActions = {
     },
     projectileCreate: function(data)
     {
-        projectiles.push({id: data.id, x: data.x, y: data.y, vx: data.vx, vy: data.vy})
+        projectiles.push({id: data.id, x: data.x, y: data.y, vx: data.vx, vy: data.vy, update: function() { this.x += this.vx; this.y += this.vy; } });
     }
 }
 
@@ -133,11 +133,12 @@ function draw()
         enemyShip.draw();
     }
     for(let i = 0; i < projectiles.length; i++)
-        {
-            let p = projectiles[i];
-            fill(255);
-            ellipse(p.x,p.y,2,2);
-        }
+    {
+        let p = projectiles[i];
+        p.update();
+        fill(255);
+        ellipse(p.x,p.y,2,2);
+    }
 }
 
 var wPress = false;
