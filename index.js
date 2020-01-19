@@ -1,11 +1,12 @@
 var express = require("express");
 var WebSocket = require("ws");
 
-
+var highestId = 0;
 class GameClient
 {
     constructor(socket)
     {
+        this.id = highestId++;
         this.socket = socket;
         this.socket.on("message", (...params) => { this.receive(...params); })
         this.x = 0;
@@ -39,13 +40,17 @@ class GameClient
         while(this.y >= height) this.y -= height;
 
         //send information
-        this.socket.send(JSON.stringify({
-            type: "entityUpdate",
-            x: this.x,
-            y: this.y,
-            vx: this.vx,
-            vy: this.vy
-        }));
+        for(let i = 0; i < clientList.length; i++)
+        {
+            clientList[i].socket.send(JSON.stringify({
+                type: "entityUpdate",
+                id: this.id,
+                x: this.x,
+                y: this.y,
+                vx: this.vx,
+                vy: this.vy
+            }));
+        }
     }
     receive(data)
     {
@@ -87,6 +92,16 @@ function main()
     gameserver.on("connection", (socket, req) => {
         let client = new GameClient(socket);
         clientList.push(client);
+        socket.send(JSON.stringify({
+            type: "setId",
+            id: client.id
+        }));
     });
+    setInterval(() => {
+        for(let i = 0; i < clientList.length; i++)
+        {
+            clientList[i].update();
+        }
+    }, 1000 / 60);
 }
 main();
