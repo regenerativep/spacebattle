@@ -8,7 +8,8 @@ class GameClient
     {
         this.id = highestId++;
         this.socket = socket;
-        this.socket.on("message", (...params) => { this.receive(...params); })
+        var _this = this;
+        this.socket.on("message", (...params) => { _this.receive(...params); })
         this.x = startingPositions[0].x;
         this.y = startingPositions[0].y;
         startingPositions.splice(0, 1);
@@ -20,6 +21,7 @@ class GameClient
         this.forwardValue = false;
         this.rocketAccel = 0.1;
         this.angleAccel = 0.1;
+        this.radius = 16;
     }
     update()
     {
@@ -41,17 +43,14 @@ class GameClient
         while(this.y >= height) this.y -= height;
 
         //send information
-        for(let i = 0; i < clientList.length; i++)
-        {
-            clientList[i].socket.send(JSON.stringify({
-                type: "entityUpdate",
-                id: this.id,
-                x: this.x,
-                y: this.y,
-                vx: this.vx,
-                vy: this.vy
-            }));
-        }
+        broadcast(JSON.stringify({
+            type: "shipUpdate",
+            id: this.id,
+            x: this.x,
+            y: this.y,
+            vx: this.vx,
+            vy: this.vy
+        }));
     }
     receive(data)
     {
@@ -69,6 +68,77 @@ class GameClient
         }
     }
 }
+function broadcast(data)
+{
+    for(let i = 0; i < clientList.length; i++)
+    {
+        clientList[i].socket.send(data);
+    }
+}
+class Projectile
+{
+    constructor(x, y, vx, vy, owner)
+    {
+        this.id = highestId++;
+        this.x = x;
+        this.y = y;
+        this.vx = vx;
+        this.vy = vy;
+        this.owner = owner;
+        this.graceTicks = 30;
+        this.updateTicksReset = 60;
+        this.updateTicks = this.updateTicksReset;
+        broadcast(JSON.stringify({
+            type: "projectileCreate",
+            id: this.id,
+            x: this.x,
+            y: this.y,
+            vx: this.vx,
+            vy: this.vy
+        }));
+    }
+    update()
+    {
+        this.x += this.vx;
+        this.y += this.vy;
+        while(this.x < 0) this.x += width;
+        while(this.x >= width) this.x -= width;
+        while(this.y < 0) this.y += height;
+        while(this.y >= height) this.y -= height;
+        //collide
+        if(this.graceTicks > 0)
+        {
+            this.graceTicks--;
+        }
+        for(let i = 0; i < clientList.length; i++)
+        {
+            let client = clientList[i];
+            if(client != this.owner || this.graceTicks <= 0)
+            {
+                let dist = (client.x - this.x) ** 2 + (client.y - this.y) ** 2;
+                if(dist < client.radius ** 2)
+                {
+                    //hit
+                    console.log("someone was shot");
+                }
+            }
+        }
+        if(this.updateTicks > 0)
+        {
+            this.updateTicks--;
+        }
+        else
+        {
+            this.updateTicks = this.updateTicksReset;
+            broadcast(JSON.stringify({
+                type: "projectileUpdate",
+                id: this.id,
+                x: this.x,
+                y: this.y
+            }));
+        }
+    }
+}
 
 var webserver = null;
 var gameserver = null;
@@ -78,6 +148,7 @@ var startingPositions = [
     { x: width / 2, y: 32 },
     { x: width / 2, y: height - 32}
 ];
+var projectileList = [];
 function main()
 {
     webserver = express();
@@ -102,6 +173,10 @@ function main()
         for(let i = 0; i < clientList.length; i++)
         {
             clientList[i].update();
+        }
+        for(let i = 0; i < projectileList.length; i++)
+        {
+            projectileList[i].update();
         }
     }, 1000 / 60);
 }
