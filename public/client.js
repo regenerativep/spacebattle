@@ -112,6 +112,7 @@ var receivedActions = {
     },
     scoreUpdate: function(data)
     {
+        console.log("score update for id " + data.id);
         if(myId != null)
         {
             if(myId == data.id)

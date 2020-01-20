@@ -14,6 +14,15 @@ function resetPositions()
     {
         clientList[i].resetPosition();
     }
+    //generate some asteroids
+    function makeAsteroid(x, y)
+    {
+        projectileList.push(new Projectile("asteroid", x, y, Math.random() * 4, Math.random() * 4, null));
+    }
+    for(let i = 0; i < 4; i++)
+    {
+
+    }
     timeToPlay = timeToPlayReset;
 }
 class GameClient
@@ -29,6 +38,8 @@ class GameClient
         this.angleFriction = 0.0001;
         this.radius = 16;
         this.score = 0;
+        this.shootCooldown = 0;
+        this.shootCooldownReset = 60;
     }
     resetPosition()
     {
@@ -72,6 +83,10 @@ class GameClient
             vy: this.vy,
             vangle: this.vangle
         }));
+        if(this.shootCooldown > 0)
+        {
+            this.shootCooldown--;
+        }
     }
     changeScore(newScore)
     {
@@ -84,8 +99,12 @@ class GameClient
     }
     shoot()
     {
-        let proj = new Projectile(this.x, this.y, this.vx + Math.cos(this.angle) * projectileSpeed, this.vy + Math.sin(this.angle) * projectileSpeed, this);
-        projectileList.push(proj);
+        if(this.shootCooldown <= 0)
+        {
+            let proj = new Projectile("bullet", this.x, this.y, this.vx + Math.cos(this.angle) * projectileSpeed, this.vy + Math.sin(this.angle) * projectileSpeed, this);
+            projectileList.push(proj);
+            this.shootCooldown = this.shootCooldownReset;
+        }
     }
 }
 function broadcast(data)
@@ -116,9 +135,10 @@ function receive(who, data)
 }
 class Projectile
 {
-    constructor(x, y, vx, vy, owner)
+    constructor(type, x, y, vx, vy, owner)
     {
         this.id = highestId++;
+        this.type = type;
         this.x = x;
         this.y = y;
         this.vx = vx;
@@ -129,6 +149,14 @@ class Projectile
         this.graceTicks = 30;
         this.updateTicksReset = 60;
         this.updateTicks = this.updateTicksReset;
+        if(this.type == "bullet")
+        {
+            this.radius = 2;
+        }
+        else if(this.type == "asteroid")
+        {
+            this.radius = 32;
+        }
         broadcast(JSON.stringify({
             type: "projectileCreate",
             id: this.id,
@@ -157,20 +185,34 @@ class Projectile
             if(client != this.owner || this.graceTicks <= 0)
             {
                 let dist = (client.x - this.x) ** 2 + (client.y - this.y) ** 2;
-                if(dist < client.radius ** 2)
+                if(dist < (client.radius + this.radius) ** 2)
                 {
+                    //hit a player
                     if(client == this.owner)
                     {
                         let otherClient = clientList[1 - clientList.indexOf(this.owner)];
                         otherClient.changeScore(otherClient.score + 1);
-                        console.log("enemy won");
                     }
                     else
                     {
-                        this.owner.changeScore(this.owner.score + 1);
-                        console.log("owner won");
+                        let otherClient = clientList[1 - clientList.indexOf(client)];
+                        otherClient.changeScore(otherClient.score + 1);
                     }
                     resetPositions();
+                }
+            }
+        }
+        for(let i = 0; i < projectileList.length; i++)
+        {
+            let proj = projectileList[i];
+            if(proj != this)
+            {
+                let dist = (proj.x - this.x) ** 2 + (proj.y - this.y) ** 2;
+                if(dist < (proj.radius + this.radus) ** 2)
+                {
+                    //hit a projectile
+                    proj.destroy();
+                    this.destroy();
                 }
             }
         }
@@ -191,11 +233,19 @@ class Projectile
         this.timeLived++;
         if(this.timeLived >= this.ttl)
         {
+            this.destroy();
+        }
+    }
+    destroy()
+    {
+        let ind = projectileList.indexOf(this);
+        if(ind >= 0)
+        {
             broadcast(JSON.stringify({
                 type: "projectileDestroy",
                 id: this.id
             }));
-            projectileList.splice(projectileList.indexOf(this), 1);
+            projectileList.splice(ind, 1);
         }
     }
 }
@@ -204,7 +254,7 @@ function resetScore()
     for(let i = 0; i < clientList.length; i++)
     {
         let client = clientList[i];
-        client.setScore(0);
+        client.changeScore(0);
     }
 }
 
@@ -238,7 +288,7 @@ function main()
             type: "setId",
             id: client.id
         }));
-        if(clientList == 2)
+        if(clientList.length == 2)
         {
             resetScore();
             resetPositions();
