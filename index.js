@@ -23,8 +23,8 @@ class GameClient
         this.socket = socket;
         this.resetPosition();
         this.forwardValue = false;
-        this.rocketAccel = 0.1;
-        this.angleAccelSeconds = 0.001;
+        this.rocketAccel = 0.02;
+        this.angleAccelSeconds = 0.03;
         this.angleFriction = 0.0001;
         this.radius = 16;
         this.score = 0;
@@ -120,7 +120,7 @@ class Projectile
         this.y = y;
         this.vx = vx;
         this.vy = vy;
-        this.ttl = 180;
+        this.ttl = 60;
         this.timeLived = 0;
         this.owner = owner;
         this.graceTicks = 30;
@@ -196,13 +196,21 @@ class Projectile
         }
     }
 }
+function resetScore()
+{
+    for(let i = 0; i < clientList.length; i++)
+    {
+        let client = clientList[i];
+        client.setScore(0);
+    }
+}
 
 var webserver = null;
 var gameserver = null;
 var clientList = null;
 var width = 640, height = 480;
 var projectileList = [];
-var projectileSpeed = 4;
+var projectileSpeed = 12;
 function main()
 {
     webserver = express();
@@ -216,6 +224,7 @@ function main()
         resetPositions();
     });
     gameserver.on("connection", (socket, req) => {
+        if(clientList >= 2) return; // no more players
         let client = new GameClient(socket);
         console.log("client connected " + client.id);
         socket.on("message", (data) => { receive(client, data); } );
@@ -224,6 +233,11 @@ function main()
             type: "setId",
             id: client.id
         }));
+        if(clientList == 2)
+        {
+            resetScore();
+            resetPositions();
+        }
     });
     setInterval(() => {
         for(let i = 0; i < clientList.length; i++)
