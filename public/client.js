@@ -149,7 +149,7 @@ function displayScores()
     textSize(32);
     fill(255,100);
     textAlign(CENTER);
-    text(myScore+" : "+enemyScore,width/2,20);
+    text(myScore+" : "+enemyScore,width/2,40);
 }
 
 function draw()
