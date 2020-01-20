@@ -171,7 +171,7 @@ function draw()
         let p = projectiles[i];
         p.update();
         fill(255);
-        ellipse(p.x,p.y,2,2);
+        ellipse(p.x,p.y,4,4);
     }
 }
 
