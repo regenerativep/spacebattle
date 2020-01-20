@@ -87,6 +87,10 @@ class GameClient
         let proj = new Projectile(this.x, this.y, this.vx + Math.cos(this.angle) * projectileSpeed, this.vy + Math.sin(this.angle) * projectileSpeed, this);
         projectileList.push(proj);
     }
+    blink()
+    {
+        
+    }
 }
 function broadcast(data)
 {
@@ -108,6 +112,9 @@ function receive(who, data)
             break;
         case "shoot":
             who.shoot();
+            break;
+        case "blink":
+            who.blink();
             break;
         default:
             console.log(dataObj);
