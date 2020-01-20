@@ -171,7 +171,7 @@ function displayScores()
 function displayCountdown()
 {
     if(timerStart == 0){timerStart=millis();}
-    let mil = millis() - timerStart();
+    let mil = millis() - timerStart;
     let timer = 3 - Math.floor(mil/1000);
     textSize(64);
     fill(255,200);
