@@ -108,6 +108,7 @@ var receivedActions = {
             {
                 enemyScore = data.value;
             }
+            projectiles = [];
         }
     }
 }
