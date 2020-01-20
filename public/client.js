@@ -1,5 +1,3 @@
-import { text } from "express";
-
 var ws = null;
 var connected = false;
 var myId = null;
