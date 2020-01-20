@@ -98,7 +98,7 @@ var receivedActions = {
     },
     scoreUpdate: function(data)
     {
-        if(myId != mull)
+        if(myId != null)
         {
             if(myId == data.id)
             {
