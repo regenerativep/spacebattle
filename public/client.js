@@ -7,6 +7,8 @@ var projectiles = [];
 var myScore = 0;
 var enemyScore = 0;
 
+var shipImg = loadImage("assets/ship.png");
+
 class SpaceShip
 {
     constructor(id)
@@ -30,6 +32,7 @@ class SpaceShip
         rotate(this.angle - Math.PI / 2);
         fill(255);
         triangle(0,16,11,-10,-11,-10);
+        image(shipImg,-16,-16);
         pop();
     }
 }
