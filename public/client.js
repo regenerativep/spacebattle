@@ -91,7 +91,7 @@ var receivedActions = {
     },
     projectileCreate: function(data)
     {
-        projectiles.push({id: data.id, x: data.x, y: data.y, vx: data.vx, vy: data.vy, type: data.type, update: function() {
+        projectiles.push({id: data.id, x: data.x, y: data.y, vx: data.vx, vy: data.vy, type: data.projectileType, update: function() {
             this.x += this.vx;
             this.y += this.vy;
             while(this.x < 0) this.x += width;
