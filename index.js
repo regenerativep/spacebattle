@@ -5,10 +5,15 @@ var highestId = 0;
 var startingPositions = null;
 function resetPositions()
 {
-    startingPositions= [
+    projectileList = [];
+    startingPositions = [
         { x: width / 2, y: 32 },
         { x: width / 2, y: height - 32}
     ];
+    for(let i = 0; i < clientList.length; i++)
+    {
+        clientList[i].resetPosition();
+    }
 }
 class GameClient
 {
@@ -192,11 +197,11 @@ function main()
     webserver.use(express.static("public"));
     let webserverPort = 8080;
     webserver.listen(webserverPort, () => { console.log("webserver listening on http://127.0.0.1:" + webserverPort + "/client.html"); });
-    resetPositions();
     let wsPort = 5524;
     gameserver = new WebSocket.Server({ port: wsPort }, () => {
         console.log("websocket server running on port " + wsPort);
         clientList = [];
+        resetPositions();
     });
     gameserver.on("connection", (socket, req) => {
         let client = new GameClient(socket);
