@@ -151,11 +151,13 @@ class Projectile
                 {
                     if(client == this.owner)
                     {
-                        client.setScore(client.score + 1);
+                        client.changeScore(client.score + 1);
+                        console.log("enemy won");
                     }
                     else
                     {
-                        this.owner.setScore(this.owner.score + 1);
+                        this.owner.changeScore(this.owner.score + 1);
+                        console.log("owner won");
                     }
                     resetPositions();
                 }
