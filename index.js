@@ -21,15 +21,10 @@ class GameClient
     {
         this.id = highestId++;
         this.socket = socket;
-        this.angle = 0;
         this.resetPosition();
-        this.vx = 0;
-        this.vy = 0;
-        this.vangle = 0;
-        this.turnValue = 0;
         this.forwardValue = false;
         this.rocketAccel = 0.1;
-        this.angleAccel = 0.001;
+        this.angleAccelSeconds = 0.001;
         this.angleFriction = 0.0001;
         this.radius = 16;
         this.score = 0;
@@ -39,6 +34,11 @@ class GameClient
         this.x = startingPositions[0].x;
         this.y = startingPositions[0].y;
         startingPositions.splice(0, 1);
+        this.vx = 0;
+        this.vy = 0;
+        this.vangle = 0;
+        this.turnValue = 0;
+        this.angle = 0;
     }
     update()
     {
@@ -47,7 +47,7 @@ class GameClient
             this.vx += Math.cos(this.angle) * this.rocketAccel;
             this.vy += Math.sin(this.angle) * this.rocketAccel;
         }
-        this.vangle += this.turnValue * this.angleAccel;
+        this.vangle = this.turnValue * this.angleAccelSeconds;
         if(this.vangle > this.angleFriction) this.vangle -= this.angleFriction;
         else if(this.vangle < -this.angleFriction) this.vangle += this.angleFriction;
         else this.vangle = 0;
@@ -120,6 +120,8 @@ class Projectile
         this.y = y;
         this.vx = vx;
         this.vy = vy;
+        this.ttl = 180;
+        this.timeLived = 0;
         this.owner = owner;
         this.graceTicks = 30;
         this.updateTicksReset = 60;
@@ -156,7 +158,8 @@ class Projectile
                 {
                     if(client == this.owner)
                     {
-                        client.changeScore(client.score + 1);
+                        let otherClient = clientList[1 - clientList.indexOf(this.owner)];
+                        otherClient.changeScore(otherClient.score + 1);
                         console.log("enemy won");
                     }
                     else
@@ -181,6 +184,15 @@ class Projectile
                 x: this.x,
                 y: this.y
             }));
+        }
+        this.timeLived++;
+        if(this.timeLived >= this.ttl)
+        {
+            broadcast(JSON.stringify({
+                type: "projectileDestroy",
+                id: this.id
+            }));
+            projectileList.splice(projectileList.indexOf(this), 1);
         }
     }
 }
