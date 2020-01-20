@@ -159,6 +159,7 @@ class Projectile
         }
         broadcast(JSON.stringify({
             type: "projectileCreate",
+            projectileType: this.type,
             id: this.id,
             x: this.x,
             y: this.y,
