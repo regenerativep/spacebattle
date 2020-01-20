@@ -23,12 +23,14 @@ class SpaceShip
         this.rocketAccel = 0.01;
         this.angleAccel = 0.01;
     }
-    draw()
+    draw(isFriendly)
     {
         push();
         translate(this.x,this.y);
         rotate(this.angle - Math.PI / 2);
-        fill(255);
+        stroke(255);
+        if(isFriendly){fill(100,100,255);}
+        else{fill(255,100,100)}
         triangle(0,16,11,-10,-11,-10);
         pop();
     }
@@ -96,6 +98,16 @@ var receivedActions = {
             while(this.y >= height) this.y -= height;
         } });
     },
+    projectileDestroy: function(data)
+    {
+        for(let i = 0; i < projectiles.length; i++)
+        {
+            if(projectiles[i].id == data.id)
+            {
+                projectiles.splice(i,1);
+            }
+        }
+    },
     scoreUpdate: function(data)
     {
         if(myId != null)
@@ -140,7 +152,7 @@ function setup()
 {
     createCanvas(640,480);
     background(0);
-    connect("ws://127.0.0.1:5524");
+    connect("ws://74.104.152.134:5524");
     noLoop();
     setInterval(() => { draw(); }, 1000 / 60);
 }
