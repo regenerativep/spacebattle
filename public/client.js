@@ -85,7 +85,14 @@ var receivedActions = {
     },
     projectileCreate: function(data)
     {
-        projectiles.push({id: data.id, x: data.x, y: data.y, vx: data.vx, vy: data.vy, update: function() { this.x += this.vx; this.y += this.vy; } });
+        projectiles.push({id: data.id, x: data.x, y: data.y, vx: data.vx, vy: data.vy, update: function() {
+            this.x += this.vx;
+            this.y += this.vy;
+            while(this.x < 0) this.x += width;
+            while(this.x >= width) this.x -= width;
+            while(this.y < 0) this.y += height;
+            while(this.y >= height) this.y -= height;
+        } });
     }
 }
 
