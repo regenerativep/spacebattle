@@ -171,11 +171,11 @@ function draw()
     displayScores();
     if(myShip != null)
     {
-        myShip.draw();
+        myShip.draw(true);
     }
     if(enemyShip != null)
     {
-        enemyShip.draw();
+        enemyShip.draw(false);
     }
     for(let i = 0; i < projectiles.length; i++)
     {
