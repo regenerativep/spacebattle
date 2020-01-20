@@ -14,6 +14,7 @@ function resetPositions()
     {
         clientList[i].resetPosition();
     }
+    timeToPlay = timeToPlayReset;
 }
 class GameClient
 {
@@ -97,7 +98,6 @@ function broadcast(data)
 function receive(who, data)
 {
     let dataObj = JSON.parse(data);
-    console.log(dataObj);
     switch(dataObj.type)
     {
         case "setTurn":
@@ -108,6 +108,9 @@ function receive(who, data)
             break;
         case "shoot":
             who.shoot();
+            break;
+        default:
+            console.log(dataObj);
             break;
     }
 }
@@ -211,6 +214,8 @@ var clientList = null;
 var width = 640, height = 480;
 var projectileList = [];
 var projectileSpeed = 12;
+var timeToPlay = 0;
+var timeToPlayReset = 180;
 function main()
 {
     webserver = express();
@@ -240,13 +245,20 @@ function main()
         }
     });
     setInterval(() => {
-        for(let i = 0; i < clientList.length; i++)
+        if(timeToPlay <= 0)
         {
-            clientList[i].update();
+            for(let i = 0; i < clientList.length; i++)
+            {
+                clientList[i].update();
+            }
+            for(let i = 0; i < projectileList.length; i++)
+            {
+                projectileList[i].update();
+            }
         }
-        for(let i = 0; i < projectileList.length; i++)
+        else
         {
-            projectileList[i].update();
+            timeToPlay--;
         }
     }, 1000 / 60);
 }
