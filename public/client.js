@@ -1,9 +1,13 @@
+import { text } from "express";
+
 var ws = null;
 var connected = false;
 var myId = null;
 var myShip = null;
 var enemyShip = null;
 var projectiles = [];
+var myScore = 0;
+var enemyScore = 0;
 
 class SpaceShip
 {
@@ -93,6 +97,20 @@ var receivedActions = {
             while(this.y < 0) this.y += height;
             while(this.y >= height) this.y -= height;
         } });
+    },
+    scoreUpdate: function(data)
+    {
+        if(myId != mull)
+        {
+            if(myId == data.id)
+            {
+                myScore = data.value;
+            }
+            else
+            {
+                enemyScore = data.value;
+            }
+        }
     }
 }
 
@@ -128,9 +146,18 @@ function setup()
     setInterval(() => { draw(); }, 1000 / 60);
 }
 
+function displayScores()
+{
+    textSize(32);
+    fill(255,100);
+    textAlign(CENTER);
+    text(myScore+" : "+enemyScore,width/2,20);
+}
+
 function draw()
 {
     background(0);
+    displayScores();
     if(myShip != null)
     {
         myShip.draw();
