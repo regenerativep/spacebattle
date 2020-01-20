@@ -6,6 +6,8 @@ var enemyShip = null;
 var projectiles = [];
 var myScore = 0;
 var enemyScore = 0;
+var gameState = 0; //0 is not ready, 1 is ready
+var timerStart = 0;
 
 class SpaceShip
 {
@@ -120,8 +122,9 @@ var receivedActions = {
             {
                 enemyScore = data.value;
             }
-            projectiles = [];
         }
+        projectiles = [];
+        gameState = 0;
     }
 }
 
@@ -165,10 +168,30 @@ function displayScores()
     text(myScore+" : "+enemyScore,width/2,40);
 }
 
+function displayCountdown()
+{
+    if(timerStart == 0){timerStart=millis();}
+    let mil = millis() - timerStart();
+    let timer = 3 - Math.floor(mil/1000);
+    textSize(64);
+    fill(255,200);
+    textAlign(CENTER);
+    text(timer,width/2,height/2);
+    if(mil==3000){gameState=1;}
+}
+
 function draw()
 {
     background(0);
     displayScores();
+    if(gameState==0)
+    {
+        displayCountdown();
+    }
+    else
+    {
+        timerStart=0;
+    }
     if(myShip != null)
     {
         myShip.draw(true);
@@ -193,73 +216,79 @@ var spacePress = false;
 
 function keyPressed()
 {
-    if(key=='w')
+    if(gameState==1)
     {
-        wPress = true;
-        ws.send(JSON.stringify({
-            type: "setForward",
-            value: true
-        }))
-    }
-    if(key=='a')
-    {
-        aPress = true;
-        ws.send(JSON.stringify({
-            type: "setTurn",
-            value: -1
-        }))
-    }
-    if(key=='d')
-    {
-        dPress = true;
-        ws.send(JSON.stringify({
-            type: "setTurn",
-            value: 1
-        }))
-    }
-    if(key==' ')
-    {
-        spacePress = true;
-        ws.send(JSON.stringify({
-            type: "shoot"
-        }))
+        if(key=='w')
+        {
+            wPress = true;
+            ws.send(JSON.stringify({
+                type: "setForward",
+                value: true
+            }))
+        }
+        if(key=='a')
+        {
+            aPress = true;
+            ws.send(JSON.stringify({
+                type: "setTurn",
+                value: -1
+            }))
+        }
+        if(key=='d')
+        {
+            dPress = true;
+            ws.send(JSON.stringify({
+                type: "setTurn",
+                value: 1
+            }))
+        }
+        if(key==' ')
+        {
+            spacePress = true;
+            ws.send(JSON.stringify({
+                type: "shoot"
+            }))
+        }
     }
 }
 
 function keyReleased()
 {
-    if(key=='w')
+    if(gameState == 1)
     {
-        wPress = false;
-        ws.send(JSON.stringify({
-            type: "setForward",
-            value: false
-        }))
-    }
-    if(key=='a')
-    {
-        aPress = false;
-        if(!dPress)
+        if(key=='w')
         {
+            wPress = false;
             ws.send(JSON.stringify({
-                type: "setTurn",
-                value: 0
+                type: "setForward",
+                value: false
             }))
         }
-    }
-    if(key=='d')
-    {
-        dPress = false;
-        if(!aPress)
+        if(key=='a')
         {
-            ws.send(JSON.stringify({
-                type: "setTurn",
-                value: 0
-            }))
+            aPress = false;
+            if(!dPress)
+            {
+                ws.send(JSON.stringify({
+                    type: "setTurn",
+                    value: 0
+                }))
+            }
         }
-    }
-    if(key==' ')
-    {
-        spacePress = false;
+        if(key=='d')
+        {
+            dPress = false;
+            if(!aPress)
+            {
+                ws.send(JSON.stringify({
+                    type: "setTurn",
+                    value: 0
+                }))
+            }
+        }
+        if(key==' ')
+        {
+            spacePress = false;
+        }
     }
 }
