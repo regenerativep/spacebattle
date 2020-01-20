@@ -2,16 +2,22 @@ var express = require("express");
 var WebSocket = require("ws");
 
 var highestId = 0;
+var startingPositions = null;
+function resetPositions()
+{
+    startingPositions= [
+        { x: width / 2, y: 32 },
+        { x: width / 2, y: height - 32}
+    ];
+}
 class GameClient
 {
     constructor(socket)
     {
         this.id = highestId++;
         this.socket = socket;
-        this.x = startingPositions[0].x;
-        this.y = startingPositions[0].y;
-        startingPositions.splice(0, 1);
         this.angle = 0;
+        this.resetPosition();
         this.vx = 0;
         this.vy = 0;
         this.vangle = 0;
@@ -21,6 +27,13 @@ class GameClient
         this.angleAccel = 0.001;
         this.angleFriction = 0.0001;
         this.radius = 16;
+        this.score = 0;
+    }
+    resetPosition()
+    {
+        this.x = startingPositions[0].x;
+        this.y = startingPositions[0].y;
+        startingPositions.splice(0, 1);
     }
     update()
     {
@@ -54,7 +67,15 @@ class GameClient
             vangle: this.vangle
         }));
     }
-    
+    changeScore(newScore)
+    {
+        this.score = newScore;
+        broadcast(JSON.stringify({
+            type: "scoreUpdate",
+            id: this.id,
+            value: this.score
+        }));
+    }
     shoot()
     {
         let proj = new Projectile(this.x, this.y, this.vx + Math.cos(this.angle) * projectileSpeed, this.vy + Math.sin(this.angle) * projectileSpeed, this);
@@ -128,8 +149,15 @@ class Projectile
                 let dist = (client.x - this.x) ** 2 + (client.y - this.y) ** 2;
                 if(dist < client.radius ** 2)
                 {
-                    //hit
-                    console.log("someone was shot");
+                    if(client == this.owner)
+                    {
+                        client.setScore(client.score + 1);
+                    }
+                    else
+                    {
+                        this.owner.setScore(this.owner.score + 1);
+                    }
+                    resetPositions();
                 }
             }
         }
@@ -154,10 +182,6 @@ var webserver = null;
 var gameserver = null;
 var clientList = null;
 var width = 640, height = 480;
-var startingPositions = [
-    { x: width / 2, y: 32 },
-    { x: width / 2, y: height - 32}
-];
 var projectileList = [];
 var projectileSpeed = 4;
 function main()
@@ -165,8 +189,8 @@ function main()
     webserver = express();
     webserver.use(express.static("public"));
     let webserverPort = 8080;
-    webserver.listen(webserverPort, () => { console.log("webserver listening on http://127.0.0.1:" + webserverPort); });
-
+    webserver.listen(webserverPort, () => { console.log("webserver listening on http://127.0.0.1:" + webserverPort + "/client.html"); });
+    resetPositions();
     let wsPort = 5524;
     gameserver = new WebSocket.Server({ port: wsPort }, () => {
         console.log("websocket server running on port " + wsPort);
