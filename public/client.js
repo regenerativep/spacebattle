@@ -177,7 +177,7 @@ function displayCountdown()
     fill(255,200);
     textAlign(CENTER);
     text(timer,width/2,height/2);
-    if(mil==3000){gameState=1;}
+    if(mil>=3000){gameState=1;}
 }
 
 function draw()
