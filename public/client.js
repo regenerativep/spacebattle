@@ -98,7 +98,7 @@ var receivedActions = {
     },
     scoreUpdate: function(data)
     {
-        if(myId != mull)
+        if(myId != null)
         {
             if(myId == data.id)
             {
@@ -149,7 +149,7 @@ function displayScores()
     textSize(32);
     fill(255,100);
     textAlign(CENTER);
-    text(myScore+" : "+enemyScore,width/2,20);
+    text(myScore+" : "+enemyScore,width/2,40);
 }
 
 function draw()
