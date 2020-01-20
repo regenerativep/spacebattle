@@ -5,7 +5,8 @@ var highestId = 0;
 var startingPositions = null;
 function resetPositions()
 {
-    startingPositions= [
+    projectileList = [];
+    startingPositions = [
         { x: width / 2, y: 32 },
         { x: width / 2, y: height - 32}
     ];
