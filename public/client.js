@@ -91,7 +91,7 @@ var receivedActions = {
     },
     projectileCreate: function(data)
     {
-        projectiles.push({id: data.id, x: data.x, y: data.y, vx: data.vx, vy: data.vy, update: function() {
+        projectiles.push({id: data.id, x: data.x, y: data.y, vx: data.vx, vy: data.vy, type: data.type, update: function() {
             this.x += this.vx;
             this.y += this.vy;
             while(this.x < 0) this.x += width;
@@ -205,7 +205,14 @@ function draw()
         let p = projectiles[i];
         p.update();
         fill(255);
-        ellipse(p.x,p.y,4,4);
+        if(p.type=="bullet"){ellipse(p.x,p.y,4,4);}
+        if(p.type=="asteroid")
+        {
+            stroke(255);
+            strokeWidth(2);
+            fill(150);
+            ellipse(p.x,p.y,32,32);
+        }
     }
 }
 
