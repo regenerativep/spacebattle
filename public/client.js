@@ -156,7 +156,7 @@ function setup()
 {
     createCanvas(640,480);
     background(0);
-    connect("ws://74.104.152.134:5524");
+    connect("ws:/10.229.222.73:5524");
     noLoop();
     setInterval(() => { draw(); }, 1000 / 60);
 }
