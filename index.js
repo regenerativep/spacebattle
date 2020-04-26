@@ -21,7 +21,7 @@ function resetPositions()
     }
     for(let i = 0; i < 4; i++)
     {
-
+        makeAsteroid(64 + Math.random() * (480 - 128), width);
     }
     timeToPlay = timeToPlayReset;
 }
